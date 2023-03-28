@@ -1,0 +1,34 @@
+version: '3'
+
+networks:
+  traefik:
+    external: true
+
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MYSQL_ROOT_PASSWORD: drupal
+      MYSQL_DATABASE: drupal
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+    restart: always
+
+  php:
+    build: .
+    depends_on:
+      - db
+    volumes:
+      - ./:/opt/drupal
+    restart: always
+    labels:
+      - "traefik.http.routers.SITENAME.rule=Host(`SITENAME.localhost`)"
+      - traefik.backend='SITE NAME'
+      - traefik.docker.network=traefik
+    networks:
+      - default # Need to be explicit to make it join the default network
+      - traefik
+
+volumes:
+  db_data:

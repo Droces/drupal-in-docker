@@ -1,0 +1,24 @@
+version: '3'
+
+networks:
+  traefik:
+    external: true # First run: `docker network create traefik`
+
+services:
+  rproxy:
+    image: traefik #The official Traefik docker image
+    # Enables the web UI and tells Traefik to listen to docker
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80" # The HTTP port
+      - "443:443"   # The HTTPS port
+      - "8080:8080" # The Web UI (enabled by --api.insecure=true)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock #So that Traefik can listen to the Docker events
+    networks:
+      - traefik
+    restart: always
